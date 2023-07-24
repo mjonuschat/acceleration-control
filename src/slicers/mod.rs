@@ -4,7 +4,6 @@ pub(crate) mod orca;
 pub(crate) mod slic3r;
 
 use crate::types::AccelerationSettings;
-use crate::ZHopSettings;
 use orca::OrcaSlicerProcessor as Orca;
 use slic3r::Slic3rProcessor as Slic3r;
 
@@ -20,7 +19,6 @@ pub(crate) trait AccelerationPreProcessor {
         &'a self,
         input: impl Read + Seek + Send + 'a,
         settings: &'a AccelerationSettings,
-        z_hop_settings: &'a ZHopSettings,
     ) -> generator::Generator<'a, (), String>;
 }
 

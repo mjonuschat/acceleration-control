@@ -1,30 +1,6 @@
 use crate::types::{AccelerationControl, AccelerationSettings, FeatureType};
-use crate::ZHopSettings;
 use counter::Counter;
 use generator::{done, Generator, Gn};
-
-pub(crate) fn safe_zhop_before_travel<'a>(
-    line: &'a str,
-    settings: &'a ZHopSettings,
-) -> Generator<'a, (), String> {
-    Gn::new_scoped(move |mut s| {
-        s.yield_with("G91\n".to_string());
-        s.yield_with(format!(
-            "G0 Z{height:.3} F{speed} ; z hop before travel move\n",
-            height = settings.hop_height(),
-            speed = settings.travel_speed()
-        ));
-        s.yield_with("G90\n".to_string());
-        s.yield_with(format!("{}\n", line));
-        s.yield_with(format!(
-            "G0 Z{height:.3} F{speed} ; descend z to print height\n",
-            height = settings.layer_height(),
-            speed = settings.travel_speed()
-        ));
-
-        done!()
-    })
-}
 
 pub(crate) fn set_velocity_limit<'a>(
     feature_type: &'a FeatureType,

@@ -1,7 +1,6 @@
 use crate::slicers::{identify_slicer_marker, AccelerationPreProcessor, PreProcessorImpl};
 use crate::types::{AccelerationControl, AccelerationSettings, FeatureType};
 
-use crate::ZHopSettings;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
@@ -38,11 +37,7 @@ static ACCELERATION_SETTINGS_REGEX: Lazy<Regex> = Lazy::new(|| {
     .unwrap()
 });
 
-fn process(
-    input: impl Read + Seek + Send,
-    output: &mut impl Write,
-    z_hop_settings: &ZHopSettings,
-) -> Result<(), PreprocessError> {
+fn process(input: impl Read + Seek + Send, output: &mut impl Write) -> Result<(), PreprocessError> {
     let mut input = BufReader::new(input);
     let mut processor: Option<PreProcessorImpl> = None;
     let mut settings: AccelerationSettings = HashMap::new();
@@ -101,7 +96,7 @@ fn process(
         Some(processor) => {
             input.rewind()?;
 
-            for line in processor.process(input.into_inner(), &settings, z_hop_settings) {
+            for line in processor.process(input.into_inner(), &settings) {
                 write!(output, "{}", line)?;
             }
 
@@ -110,14 +105,14 @@ fn process(
     }
 }
 
-pub(crate) fn file(src: &PathBuf, z_hop_settings: &ZHopSettings) -> Result<(), PreprocessError> {
+pub(crate) fn file(src: &PathBuf) -> Result<(), PreprocessError> {
     let dest_path = src.clone();
     let tempfile = NamedTempFile::new()?;
 
     let reader = BufReader::new(File::open(src)?);
     let mut writer = BufWriter::new(&tempfile);
 
-    match process(reader, &mut writer, z_hop_settings) {
+    match process(reader, &mut writer) {
         Ok(_) => {
             writer.flush()?;
 

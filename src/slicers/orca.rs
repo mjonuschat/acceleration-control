@@ -1,10 +1,9 @@
-use crate::gcode::{dump_settings, dump_stats, safe_zhop_before_travel, set_velocity_limit};
+use crate::gcode::{dump_settings, dump_stats, set_velocity_limit};
 use crate::slicers::AccelerationPreProcessor;
 use crate::types::{
     AccelerationSettings, AccelerationType, FeatureType, DEFAULT_FIRST_LAYER_ACCELERATION,
     DEFAULT_TRAVEL_ACCELERATION,
 };
-use crate::ZHopSettings;
 use counter::Counter;
 use generator::{done, Gn};
 use once_cell::sync::Lazy;
@@ -14,10 +13,6 @@ use std::io::{BufRead, BufReader, Read, Seek};
 static TRAVEL_REGEX: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"(?i)^G1\s+X[\d.]+\s+Y[\d.]+(?<feedrate>\s+F[\d.]+)?\s*(;|$)"#).unwrap()
 });
-static Z_MOVE_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"^G1\s+Z[\d.]+(?<feedrate>\s+F[\d.]+)?\s*(;|$)"#).unwrap());
-static HEIGHT_REGEX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r#"^\s*;\s*HEIGHT\s*:\s*(?<height>[\d.]+)\s*$"#).unwrap());
 
 pub(crate) struct OrcaSlicerProcessor {}
 
@@ -56,14 +51,11 @@ impl AccelerationPreProcessor for OrcaSlicerProcessor /**/ {
         &'a self,
         input: impl Read + Seek + Send + 'a,
         settings: &'a AccelerationSettings,
-        z_hop_settings: &'a ZHopSettings,
     ) -> generator::Generator<'a, (), String> {
         let mut input = BufReader::new(input);
-        let mut z_hop_settings = *z_hop_settings;
 
         let mut layer_num: u64 = 0;
         let mut beancounter: Counter<FeatureType, u64> = Counter::new();
-        let mut safe_zhop_done: bool = false;
         let mut last_set_acceleration_type: AccelerationType = AccelerationType::None;
         let mut current_feature_type: Option<FeatureType> = None;
 
@@ -93,33 +85,6 @@ impl AccelerationPreProcessor for OrcaSlicerProcessor /**/ {
 
                 if line.trim().starts_with("SET_VELOCITY_LIMIT") {
                     tracing::trace!(line, "Skipping Klipper SET_VELOCITY_LIMIT command");
-                    continue;
-                }
-
-                if layer_num == 1 {
-                    if !safe_zhop_done {
-                        if TRAVEL_REGEX.is_match(&line) {
-                            tracing::debug!(line, "Injecting safe Z move");
-                            s.yield_from(safe_zhop_before_travel(&line, &z_hop_settings));
-                            safe_zhop_done = true;
-                            continue;
-                        } else if Z_MOVE_REGEX.is_match(&line) {
-                            tracing::trace!(line, "Skipping initial Z move");
-                            continue;
-                        } else if let Some(captures) = HEIGHT_REGEX.captures(&line) {
-                            z_hop_settings.first_layer_height = captures
-                                .name("height")
-                                .and_then(|v| v.as_str().parse().ok())
-                                .unwrap_or(0.2);
-                            tracing::trace!(
-                                line,
-                                "Found initial layer height: {:.3}",
-                                z_hop_settings.first_layer_height
-                            );
-                        }
-                    }
-
-                    s.yield_with(format!("{}\n", &line));
                     continue;
                 }
 
