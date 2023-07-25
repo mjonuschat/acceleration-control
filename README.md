@@ -10,7 +10,6 @@ The following slicers are currently supported:
 * SuperSlicer
 * PrusaSlicer
 * Orcaslicer
-* Slic3r
 
 ## Installation and usage
 
@@ -38,21 +37,22 @@ GCode files that it generates the following steps need to be performed:
    block to your Start G-Code, before your `PRINT_START` macro.
 
 ```text
+; ACCEL: 10000/10000/20  for TYPE:Travel
 ; ACCEL: 2000/1000/5     for TYPE:First Layer
-; ACCEL: 10000/10000/8   for TYPE:Travel
+; ACCEL: 2000/1000/5     for TYPE:Custom
 ; ACCEL: 2000/1000/5     for TYPE:External perimeter
 ; ACCEL: 2000/1000/5     for TYPE:Overhang perimeter
-; ACCEL: 2500/1750/5     for TYPE:Internal perimeter
-; ACCEL: 2500/1750/5     for TYPE:Top solid infill
-; ACCEL: 4000/2000/5     for TYPE:Solid infill
-; ACCEL: 6000/3000/5     for TYPE:Internal infill
-; ACCEL: 4000/2000/5     for TYPE:Bridge infill
-; ACCEL: 4000/2000/5     for TYPE:Internal bridge infill
+; ACCEL: 4000/2000/10    for TYPE:Internal perimeter
+; ACCEL: 2000/1000/5     for TYPE:Top solid infill
+; ACCEL: 10000/5000/10   for TYPE:Solid infill
+; ACCEL: 10000/5000/20   for TYPE:Internal infill
+; ACCEL: 5000/2500/5     for TYPE:Bridge infill
+; ACCEL: 5000/2500/5     for TYPE:Internal bridge infill
 ; ACCEL: 2000/1000/5     for TYPE:Thin wall
 ; ACCEL: 2000/1000/5     for TYPE:Gap fill
-; ACCEL: 4000/2000/8     for TYPE:Skirt
-; ACCEL: 6000/3000/8     for TYPE:Support material
-; ACCEL: 6000/3000/8     for TYPE:Support material interface
+; ACCEL: 5000/2500/5     for TYPE:Skirt
+; ACCEL: 10000/5000/20   for TYPE:Support material
+; ACCEL: 5000/2500/5     for TYPE:Support material interface
 ```
 
 Accelerations are specified in the ACCEL / ACCEL_TO_DECEL /
