@@ -101,3 +101,40 @@ pub(crate) fn process<'a>(
         done!();
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::slicers::tests::SETTINGS;
+    use std::io::Cursor;
+
+    #[test]
+    fn test_m204_removal() {
+        let input = Cursor::new("M204 S12000\n".as_bytes());
+
+        let result: String = process(input, &SETTINGS, |_ft: &FeatureType| "TESTING").collect();
+        let result: Vec<&str> = result.split('\n').collect();
+        assert_eq!(
+            result
+                .iter()
+                .filter(|line| line.starts_with("M204 S"))
+                .count(),
+            0
+        );
+    }
+
+    #[test]
+    fn test_set_velocity_limit_removal() {
+        let input = Cursor::new("SET_VELOCITY_LIMIT SQUARE_CORNER_VELOCITY=13\n".as_bytes());
+
+        let result: String = process(input, &SETTINGS, |_ft: &FeatureType| "TESTING").collect();
+        let result: Vec<&str> = result.split('\n').collect();
+        assert_eq!(
+            result
+                .iter()
+                .filter(|line| line.starts_with("SET_VELOCITY_LIMIT"))
+                .count(),
+            0
+        );
+    }
+}
