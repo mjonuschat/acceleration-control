@@ -35,29 +35,29 @@ GCode files that it generates the following steps need to be performed:
    will automatically remove any Marlin M204 and Klipper SET_VELOCITY_LIMIT
    commands that might be emitted by your slicer.
 6. Configure the per-feature acceleration control values by adding the following
-   block to your Start G-Code, before your `PRINT_START` macro.
+   block to your Start G-Code, before your `PRINT_START` macro. Alternatively you 
+   can also use a [config file](./config/example.conf) by adding ` -c /path/to/config/file` 
+   to the call in the post-processing options.  
+   ```text
+   ; ACCEL: 10000/10000/20  for TYPE:Travel
+   ; ACCEL: 2000/1000/5     for TYPE:First Layer
+   ; ACCEL: 2000/1000/5     for TYPE:Custom
+   ; ACCEL: 2000/1000/5     for TYPE:External perimeter
+   ; ACCEL: 2000/1000/5     for TYPE:Overhang perimeter
+   ; ACCEL: 4000/2000/10    for TYPE:Internal perimeter
+   ; ACCEL: 2000/1000/5     for TYPE:Top solid infill
+   ; ACCEL: 10000/5000/10   for TYPE:Solid infill
+   ; ACCEL: 10000/5000/20   for TYPE:Internal infill
+   ; ACCEL: 5000/2500/5     for TYPE:Bridge infill
+   ; ACCEL: 5000/2500/5     for TYPE:Internal bridge infill
+   ; ACCEL: 2000/1000/5     for TYPE:Thin wall
+   ; ACCEL: 2000/1000/5     for TYPE:Gap fill
+   ; ACCEL: 5000/2500/5     for TYPE:Skirt
+   ; ACCEL: 10000/5000/20   for TYPE:Support material
+   ; ACCEL: 5000/2500/5     for TYPE:Support material interface
+   ```
 
-```text
-; ACCEL: 10000/10000/20  for TYPE:Travel
-; ACCEL: 2000/1000/5     for TYPE:First Layer
-; ACCEL: 2000/1000/5     for TYPE:Custom
-; ACCEL: 2000/1000/5     for TYPE:External perimeter
-; ACCEL: 2000/1000/5     for TYPE:Overhang perimeter
-; ACCEL: 4000/2000/10    for TYPE:Internal perimeter
-; ACCEL: 2000/1000/5     for TYPE:Top solid infill
-; ACCEL: 10000/5000/10   for TYPE:Solid infill
-; ACCEL: 10000/5000/20   for TYPE:Internal infill
-; ACCEL: 5000/2500/5     for TYPE:Bridge infill
-; ACCEL: 5000/2500/5     for TYPE:Internal bridge infill
-; ACCEL: 2000/1000/5     for TYPE:Thin wall
-; ACCEL: 2000/1000/5     for TYPE:Gap fill
-; ACCEL: 5000/2500/5     for TYPE:Skirt
-; ACCEL: 10000/5000/20   for TYPE:Support material
-; ACCEL: 5000/2500/5     for TYPE:Support material interface
-```
-
-Accelerations are specified in the ACCEL / ACCEL_TO_DECEL /
-SQUARE_CORNER_VELOCITY format.
+   Accelerations are specified in the ACCEL / ACCEL_TO_DECEL / SQUARE_CORNER_VELOCITY format.
 
 ## How does it work
 
