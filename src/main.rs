@@ -12,6 +12,8 @@ mod types;
 /// Preprocess G-Code files to inject fine-grained acceleration control commands per feature.
 ///
 /// Current supported slicers:{n}
+///   * OrcaSlicer{n}
+///   * PrusaSlicer{n}
 ///   * SuperSlicer{n}
 #[derive(clap::Parser, Debug)]
 #[clap(author, about, version, name = "Preprocess Cancellation", color=ColorChoice::Auto)]
