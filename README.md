@@ -18,8 +18,9 @@ GCode files that it generates the following steps need to be performed:
 
 1. Grab the latest released binary for your operating system from the
    [releases](https://github.com/mjonuschat/acceleration-control/releases) page.
-2. Copy the binary to a permanent home, for
-   example,`/Users`/myuser/Documents/3D-Printing/Tools` on a Mac.
+2. Copy the binary to a permanent home, for example, `/Users/myuser/Documents/3D-Printing/Tools` on a Mac.
+   * On macOS, you need to remove the "Quarantine Flag" from the binary as it has not been signed by Apple.  
+     To do that run `sudo xattr -r -d com.apple.quarantine /path/to/acceleration-control`.
 3. Add `/Users/myuser/Documents/3D-Printing/Tools/acceleration-control;` to the
    Slicer post-processing options:
     * In SuperSlicer: Print Settings > Output Options > Post Processing Scripts
