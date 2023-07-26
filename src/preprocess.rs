@@ -1,7 +1,6 @@
 use crate::slicers::{identify_slicer_marker, AccelerationPreProcessor, PreProcessorImpl};
 use crate::types::{AccelerationControl, AccelerationSettings, FeatureType};
 
-use crate::ZHopSettings;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
@@ -41,15 +40,18 @@ static ACCELERATION_SETTINGS_REGEX: Lazy<Regex> = Lazy::new(|| {
 fn process(
     input: impl Read + Seek + Send,
     output: &mut impl Write,
-    z_hop_settings: &ZHopSettings,
+    settings: &Option<AccelerationSettings>,
 ) -> Result<(), PreprocessError> {
     let mut input = BufReader::new(input);
     let mut processor: Option<PreProcessorImpl> = None;
-    let mut settings: AccelerationSettings = HashMap::new();
+    let mut settings: AccelerationSettings =
+        settings.as_ref().map_or_else(HashMap::new, |s| s.clone());
+    let mut overrides: AccelerationSettings = HashMap::new();
 
     let mut stop_settings_scan = STOP_SETTINGS_SCAN_AFTER_LINES;
     for line in input.by_ref().lines() {
         let line = line.map(|l| l.trim().to_owned())?;
+        dbg!(&line);
 
         if processor.is_none() {
             processor = identify_slicer_marker(&line);
@@ -80,18 +82,23 @@ fn process(
                     .expect("Required value for feature type not found"),
             )?;
 
-            settings.entry(feature_type).or_insert(AccelerationControl {
-                accel,
-                accel_to_decel,
-                scv,
-            });
-        } else if !settings.is_empty() {
+            overrides
+                .entry(feature_type)
+                .or_insert(AccelerationControl {
+                    accel,
+                    accel_to_decel,
+                    scv,
+                });
+        } else if !overrides.is_empty() {
             stop_settings_scan -= 1;
             if stop_settings_scan == 0 {
                 break;
             }
         }
     }
+
+    // Merge settings from config + settings from gcode
+    settings.extend(overrides);
 
     match &processor {
         None => {
@@ -101,7 +108,7 @@ fn process(
         Some(processor) => {
             input.rewind()?;
 
-            for line in processor.process(input.into_inner(), &settings, z_hop_settings) {
+            for line in processor.process(input.into_inner(), &settings) {
                 write!(output, "{}", line)?;
             }
 
@@ -110,14 +117,17 @@ fn process(
     }
 }
 
-pub(crate) fn file(src: &PathBuf, z_hop_settings: &ZHopSettings) -> Result<(), PreprocessError> {
+pub(crate) fn file(
+    src: &PathBuf,
+    settings: &Option<AccelerationSettings>,
+) -> Result<(), PreprocessError> {
     let dest_path = src.clone();
     let tempfile = NamedTempFile::new()?;
 
     let reader = BufReader::new(File::open(src)?);
     let mut writer = BufWriter::new(&tempfile);
 
-    match process(reader, &mut writer, z_hop_settings) {
+    match process(reader, &mut writer, settings) {
         Ok(_) => {
             writer.flush()?;
 
