@@ -1,7 +1,7 @@
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
 use strum::EnumString;
-
 pub(crate) type AccelerationSettings = HashMap<FeatureType, AccelerationControl>;
 
 pub(crate) static DEFAULT_TRAVEL_ACCELERATION: AccelerationControl = AccelerationControl {
@@ -15,7 +15,7 @@ pub(crate) static DEFAULT_FIRST_LAYER_ACCELERATION: AccelerationControl = Accele
     scv: 5,
 };
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Deserialize)]
 pub(crate) struct AccelerationControl {
     /// Acceleration
     pub(crate) accel: usize,
@@ -48,7 +48,7 @@ pub(crate) enum AccelerationType {
     Travel,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, EnumString, strum::Display)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, EnumString, strum::Display, Deserialize)]
 #[strum(ascii_case_insensitive)]
 pub(crate) enum FeatureType {
     #[strum(serialize = "TYPE:First Layer", serialize = "First Layer")]

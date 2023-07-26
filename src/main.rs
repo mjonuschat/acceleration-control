@@ -1,4 +1,5 @@
-use anyhow::Result;
+use crate::types::AccelerationSettings;
+use anyhow::{Context, Result};
 use clap::{ArgAction, ColorChoice, Parser, ValueHint};
 use std::path::PathBuf;
 use tracing::Level;
@@ -18,6 +19,9 @@ pub(crate) struct Cli {
     /// Verbose mode (-v, -vv, -vvv, etc.)
     #[clap(short, long, action=ArgAction::Count)]
     verbose: u8,
+    /// Acceleration control settings
+    #[clap(short, long, value_hint=ValueHint::FilePath)]
+    pub config: Option<PathBuf>,
     /// G-code input files
     #[clap(value_hint=ValueHint::FilePath, num_args=1..)]
     pub gcode: Vec<PathBuf>,
@@ -41,10 +45,20 @@ fn main() -> Result<()> {
     let args = Cli::parse();
     setup_logging(args.verbose)?;
 
+    let mut settings: Option<AccelerationSettings> = None;
+    if let Some(config) = args.config {
+        settings = Some(
+            toml::from_str(
+                &std::fs::read_to_string(config).context("Failed to read configuration file")?,
+            )
+            .context("Failed to parse configuration")?,
+        );
+    }
+
     for filename in args.gcode {
         tracing::debug!("Processing GCode file: {}", filename.to_string_lossy());
 
-        let result = preprocess::file(&filename);
+        let result = preprocess::file(&filename, &settings);
 
         match result {
             Ok(_) => {
