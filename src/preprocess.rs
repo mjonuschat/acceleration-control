@@ -51,7 +51,6 @@ fn process(
     let mut stop_settings_scan = STOP_SETTINGS_SCAN_AFTER_LINES;
     for line in input.by_ref().lines() {
         let line = line.map(|l| l.trim().to_owned())?;
-        dbg!(&line);
 
         if processor.is_none() {
             processor = identify_slicer_marker(&line);
